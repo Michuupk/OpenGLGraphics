@@ -15,10 +15,11 @@ pix2angle = 1.0
 radius = 0
 light0_x = 0.0
 light0_y = 0.0
-light0_z = 0.0
+light0_z = -5.0
 light1_x = 0.0
 light1_y = 0.0
-light1_z = 0.0
+light1_z = 5.0
+light_source_move = 0
 
 left_mouse_button_pressed = 0
 right_mouse_button_pressed = 0
@@ -50,8 +51,8 @@ def startup():
 
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
-    glFrontFace(GL_CW)
-    glEnable(GL_CULL_FACE)
+    #glFrontFace(GL_CW)
+    #glEnable(GL_CULL_FACE)
     glCullFace(GL_BACK)
     glShadeModel(GL_SMOOTH)
     
@@ -67,7 +68,7 @@ def startup():
 
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
-    glEnable(GL_LIGHT1)
+    #glEnable(GL_LIGHT1)
     
     #Light0
     light_ambient0 = [0.1, 0.1, 0.1, 1.0] # rgb
@@ -149,6 +150,27 @@ def eggLine():
         u = 0
     glEnd()
 
+def Cube():
+    
+    glColor3f(1.0, 1.0, 1.0)
+    glBegin(GL_QUADS)
+    glVertex3f(-5 , -5, -5)
+    glVertex3f(5 , -5, -5)
+    glVertex3f(5 , 5, -5)
+    glVertex3f(-5 , 5, -5)
+    glVertex3f(-5 , -5, 5)
+    glVertex3f(5 , -5, 5)
+    glVertex3f(5 , 5, 5)
+    glVertex3f(-5 , 5, 5)
+    glVertex3f(-5 , -5, -5)
+    glVertex3f(-5 , -5, 5)
+    glVertex3f(-5 , 5, 5)
+    glVertex3f(-5 , 5, -5)
+    
+    glEnd()
+    
+    
+    
 def eggTriangles():
     global d
     tab = np.zeros((d, d, 3))
@@ -244,7 +266,7 @@ def spin():
     glRotatef(angle_z, 0.0, 0.0, 1.0)  # Obrót w osi Z
 
 def keyboard_key_callback(window, key, scancode, action, mods):
-    global angle_x, angle_y, angle_z, option, d
+    global angle_x, angle_y, angle_z, option, d, light0_x, light1_x, light0_y, light1_y, light0_z, light1_z, light_source_move
     if action == GLFW_PRESS or action == GLFW_REPEAT:
         if key == GLFW_KEY_A:  # Strzałka w lewo - obrót w osi Y
             angle_y -= 10.0
@@ -259,11 +281,13 @@ def keyboard_key_callback(window, key, scancode, action, mods):
         elif key == GLFW_KEY_E:  # Klawisz "E" - obrót w osi Z
             angle_z -= 10.0
         elif key == GLFW_KEY_Z: # Klawisz "Z" - włączenie/wyłączenie światła
+            print("Zmiana Światła")
             if glIsEnabled(GL_LIGHTING):
                 glDisable(GL_LIGHTING)
             else:
-                glEnable(GL_LIGHTING)  
+                glEnable(GL_LIGHTING)
         elif key == GLFW_KEY_SPACE:  # spacja - zmiana obiektu
+            print("Zmiana obiektu")
             if (option < 4):
                 option += 1
             else:
@@ -279,6 +303,63 @@ def keyboard_key_callback(window, key, scancode, action, mods):
                 print(d)
         elif key == GLFW_KEY_ESCAPE and action == GLFW_PRESS:
             glfwSetWindowShouldClose(window, GLFW_TRUE)
+        elif key == GLFW_KEY_X: # Klawisz "X" - przesunięcie światła
+            print("Zmiana światła na : ")
+            if(light_source_move == 0):
+                print("oba światła")
+            elif(light_source_move == 1):
+                print("światło czerwone")
+            elif(light_source_move == 2):
+                print("światło niebieskie")
+            if light_source_move < 2:
+                light_source_move += 1
+            else:
+                light_source_move = 0
+        elif light_source_move == 0: # Klawisz "X" - przesunięcie światła
+            if key == GLFW_KEY_J:  # J - przesunięcie świateł w lewo
+                light0_x -= 1.0
+                light1_x += 1.0
+            elif key == GLFW_KEY_L:  # L - przesunięcie świateł w prawo
+                light0_x += 1.0
+                light1_x -= 1.0
+            elif key == GLFW_KEY_I:  # I - przesunięcie świateł w górę
+                light0_y += 1.0
+                light1_y -= 1.0
+            elif key == GLFW_KEY_K:  # K - przesunięcie świateł w dół
+                light0_y -= 1.0
+                light1_y += 1.0
+            elif key == GLFW_KEY_U:  # U - przesunięcie świateł do przodu
+                light0_z += 1.0
+                light1_z -= 1.0
+            elif key == GLFW_KEY_O:  # O - przesunięcie świateł do tyłu
+                light0_z -= 1.0
+                light1_z += 1.0
+        elif light_source_move == 1: # światło czerwone
+            if key == GLFW_KEY_J:  # J - przesunięcie światła czerwonego w lewo
+                light0_x -= 1.0
+            elif key == GLFW_KEY_L:  # L - przesunięcie światła czerwonego w prawo
+                light0_x += 1.0
+            elif key == GLFW_KEY_I:  # I - przesunięcie światła czerwonego w górę
+                light0_y += 1.0
+            elif key == GLFW_KEY_K:  # K - przesunięcie światła czerwonego w dół
+                light0_y -= 1.0
+            elif key == GLFW_KEY_U:  # U - przesunięcie światła czerwonego do przodu
+                light0_z += 1.0
+            elif key == GLFW_KEY_O:  # O - przesunięcie światła czerwonego do tyłu
+                light0_z -= 1.0
+        elif light_source_move == 2: # światło niebieskie
+            if key == GLFW_KEY_J:  # J - przesunięcie światła niebieskiego w lewo
+                light1_x -= 1.0
+            elif key == GLFW_KEY_L:  # L - przesunięcie światła niebieskiego w prawo
+                light1_x += 1.0
+            elif key == GLFW_KEY_I:  # I - przesunięcie światła niebieskiego w górę
+                light1_y += 1.0
+            elif key == GLFW_KEY_K:  # K - przesunięcie światła niebieskiego w dół
+                light1_y -= 1.0
+            elif key == GLFW_KEY_U:  # U - przesunięcie światła niebieskiego do przodu
+                light1_z += 1.0
+            elif key == GLFW_KEY_O:  # O - przesunięcie światła niebieskiego do tyłu
+                light1_z -= 1.0
 
 def mouse_motion_callback(window, x_pos, y_pos):
     global delta_x
@@ -380,6 +461,8 @@ def render(time):
     glPopMatrix()
 
     axes()
+    Cube()
+    
     
     spin()
     getfunction(option)
@@ -417,12 +500,15 @@ def main():
     if(d == 0):
         d = int(input("Podaj N: "))
         
-    print("Zmiana obiektu przy pomocy sklawisza Z")
+    print("Zmiana obiektu przy pomocy Spacji")
     print(" ")
     print("Zmiana N przy pomocy klawiszy \"[\" i \"]\" ")
     print(" ")
     print("Poruszanie obiektem przy pomocy WSADQE")
     print("Poruszanie kamerą przy pomocy myszki oraz kółka myszki")
+    print("Przęłączanie światła przy pomocy klawisza Z")
+    print("Przęłączanie kontorlowanego światła przy pomocy X")
+    print("Przesunięcie światła przy pomocy klawiszy IJKLUO")
         
     if not glfwInit():
         sys.exit(-1)
