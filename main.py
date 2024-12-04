@@ -12,7 +12,13 @@ theta_x = 0.0
 theta_y = 0.0
 theta_z = 0.0
 pix2angle = 1.0
-radius = 0 
+radius = 0
+light0_x = 0.0
+light0_y = 0.0
+light0_z = 0.0
+light1_x = 0.0
+light1_y = 0.0
+light1_z = 0.0
 
 left_mouse_button_pressed = 0
 right_mouse_button_pressed = 0
@@ -34,7 +40,7 @@ def getfunction(option):
     elif option == 2:
         return eggLine()
     elif option == 3:
-        return eggTriangleStrip()
+        return eggTriangles()
     elif option == 4:
         return utahTeapot()
     
@@ -44,13 +50,13 @@ def startup():
 
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
-    #glFrontFace(GL_CCW)
-    #glEnable(GL_CULL_FACE)
+    glFrontFace(GL_CW)
+    glEnable(GL_CULL_FACE)
     glCullFace(GL_BACK)
     glShadeModel(GL_SMOOTH)
     
     material_ambient = [0.5, 0.5, 0.5, 1.0]
-    material_diffuse = [1.0, 1.0, 1.0, 1.0]
+    material_diffuse = [0.0, 1.0, 0.0, 1.0]
     material_specular = [0.3, 0.3, 0.3, 1.0]
     material_shininess = 50
     
@@ -60,7 +66,6 @@ def startup():
     glMaterialfv(GL_FRONT, GL_SHININESS, material_shininess)
 
     glEnable(GL_LIGHTING)
-    #Light0
     glEnable(GL_LIGHT0)
     glEnable(GL_LIGHT1)
     
@@ -73,11 +78,6 @@ def startup():
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse0)
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular0)
 
-    # light_position0 = [5.0, 0.0, 0.0, 1.0]
-    # light_direction0 = [-1.0, 0.0, 0.0]
-    # glLightfv(GL_LIGHT0, GL_POSITION, light_position0)
-    # glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction0)
-
     glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90.0) 
     glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 1.0)
      
@@ -88,36 +88,12 @@ def startup():
     glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient1)
     glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse1)
     glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular1)
-    
-    # light_position1 = [-5.0, 0.0, 0.0, 1.0]
-    # light_direction1 = [1.0, 0.0, 0.0]
-    # glLightfv(GL_LIGHT1, GL_POSITION, light_position1)
-    # glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction1)
 
     glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 90.0) 
     glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 1.0)
     
-
-
 def shutdown():
     pass
-
-def squares():
-    glBegin(GL_QUADS)
-    
-    glColor3f(1.0, 1.0, 1.0)
-    glVertex3f(5.0, 5.0, 5.0)
-    glVertex3f(5.0, 5.0, -5.0)
-    glVertex3f(5.0, -5.0, -5.0)
-    glVertex3f(5.0, -5.0, 5.0)
-    
-    glVertex3f(-5.0, 5.0, 5.0)
-    glVertex3f(-5.0, 5.0, -5.0)
-    glVertex3f(-5.0, -5.0, -5.0)
-    glVertex3f(-5.0, -5.0, 5.0)
-    
-    glEnd()
-    
 
 def axes():
     glBegin(GL_LINES)
@@ -173,7 +149,7 @@ def eggLine():
         u = 0
     glEnd()
 
-def eggTriangleStrip():
+def eggTriangles():
     global d
     tab = np.zeros((d, d, 3))
 
@@ -186,29 +162,37 @@ def eggTriangleStrip():
             z = (-90 * u**5 + 225 * u**4 - 270 * u**3 + 180 * u**2 - 45 * u) * math.sin(3.1415 * v)
             tab[i, j] = [x, y, z]
             
+    def calculate_normal(v1, v2, v3):
+        u = np.subtract(v2, v1)
+        v = np.subtract(v3, v1)
+        normal = np.cross(u, v)
+        norm = np.linalg.norm(normal)
+        if norm == 0:
+            return normal
+        return normal / norm
+
     glBegin(GL_TRIANGLES)
-    for j in range(d):
-        for i in range(d):
-            
-            pos1 = tab[i - 1, j]
-            pos2 = tab[i, j - 1]
-            pos3 = tab[i, j]
-            pos4 = tab[i - 1, j - 1]
-            
-            glColor3f(1.0, 0.0, 0.0) #r
-            glVertex3f(*tab[i - 1, j])  #1
-            glColor3f(0.0, 1.0, 0.0) #g
-            glVertex3f(*tab[i, j - 1]) #2
-            glColor3f(0.0, 0.0, 1.0) #b
-            glVertex3f(*tab[i, j]) #3
-            
-            glColor3f(1.0, 0.0, 1.0) 
-            glVertex3f(*tab[i - 1, j]) #1
-            glColor3f(1.0, 1.0, 0.0)
-            glVertex3f(*tab[i - 1, j - 1]) #4
-            glColor3f(0.0, 1.0, 1.0)
-            glVertex3f(*tab[i, j - 1]) #2
-            
+    for j in range(1, d):
+        for i in range(1, d):
+            v1 = tab[i - 1, j - 1]
+            v2 = tab[i, j - 1]
+            v3 = tab[i, j]
+            v4 = tab[i - 1, j]
+
+            normal1 = calculate_normal(v1, v2, v3)
+            normal2 = calculate_normal(v1, v3, v4)
+
+            glColor3f(1.0, 0.0, 0.0) # red
+            glNormal3f(*normal1)
+            glVertex3f(*v1)
+            glVertex3f(*v2)
+            glVertex3f(*v3)
+
+            glColor3f(0.0, 0.0, 1.0) # blue
+            glNormal3f(*normal2)
+            glVertex3f(*v1)
+            glVertex3f(*v3)
+            glVertex3f(*v4)
     glEnd()
 
 def readTeapot():
@@ -255,7 +239,6 @@ angle_x = 0.0
 angle_y = 0.0
 angle_z = 0.0
 def spin():
-    glEnable(GL_NORMALIZE)
     glRotatef(angle_x, 1.0, 0.0, 0.0)  # Obrót w osi X
     glRotatef(angle_y, 0.0, 1.0, 0.0)  # Obrót w osi Y
     glRotatef(angle_z, 0.0, 0.0, 1.0)  # Obrót w osi Z
@@ -263,19 +246,19 @@ def spin():
 def keyboard_key_callback(window, key, scancode, action, mods):
     global angle_x, angle_y, angle_z, option, d
     if action == GLFW_PRESS or action == GLFW_REPEAT:
-        if key == GLFW_KEY_LEFT:  # Strzałka w lewo - obrót w osi Y
+        if key == GLFW_KEY_A:  # Strzałka w lewo - obrót w osi Y
             angle_y -= 10.0
-        elif key == GLFW_KEY_RIGHT:  # Strzałka w prawo - obrót w osi Y
+        elif key == GLFW_KEY_D:  # Strzałka w prawo - obrót w osi Y
             angle_y += 10.0
-        elif key == GLFW_KEY_UP:  # Strzałka w górę - obrót w osi X
+        elif key == GLFW_KEY_W:  # Strzałka w górę - obrót w osi X
             angle_x += 10.0
-        elif key == GLFW_KEY_DOWN:  # Strzałka w dół - obrót w osi X
+        elif key == GLFW_KEY_S:  # Strzałka w dół - obrót w osi X
             angle_x -= 10.0
-        elif key == GLFW_KEY_Z:  # Klawisz "Z" - obrót w osi Z
+        elif key == GLFW_KEY_Q:  # Klawisz "Q" - obrót w osi Z
             angle_z += 10.0
-        elif key == GLFW_KEY_X:  # Klawisz "X" - obrót w osi Z
+        elif key == GLFW_KEY_E:  # Klawisz "E" - obrót w osi Z
             angle_z -= 10.0
-        elif key == GLFW_KEY_L: # Klawisz "L" - włączenie/wyłączenie światła
+        elif key == GLFW_KEY_Z: # Klawisz "Z" - włączenie/wyłączenie światła
             if glIsEnabled(GL_LIGHTING):
                 glDisable(GL_LIGHTING)
             else:
@@ -376,13 +359,19 @@ def render(time):
     glLoadIdentity()
     
     #red light
-    light_position0 = [7.0, 0.0, 0.0, 1.0]
+    global light0_x
+    global light0_y
+    global light0_z
+    light_position0 = [light0_x, light0_y, light0_z, 1.0]
     light_direction0 = [-1.0, 0.0, 0.0]
     glLightfv(GL_LIGHT0, GL_POSITION, light_position0)
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction0)
 
     #blue light
-    light_position1 = [-7.0, 0.0, 0.0, 1.0]
+    global light1_x
+    global light1_y
+    global light1_z
+    light_position1 = [light1_x, light1_y, light1_z, 1.0]
     light_direction1 = [1.0, 0.0, 0.0]
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1)
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction1)
@@ -393,7 +382,6 @@ def render(time):
     axes()
     
     spin()
-    #squares()
     getfunction(option)
 
     glFlush()
@@ -429,11 +417,11 @@ def main():
     if(d == 0):
         d = int(input("Podaj N: "))
         
-    print("Zmiana obiektu przy pomocy spacji")
+    print("Zmiana obiektu przy pomocy sklawisza Z")
     print(" ")
     print("Zmiana N przy pomocy klawiszy \"[\" i \"]\" ")
     print(" ")
-    print("Poruszanie obiektem przy pomocy strzałek oraz klawiszy \"Z\" i \"X\"")
+    print("Poruszanie obiektem przy pomocy WSADQE")
     print("Poruszanie kamerą przy pomocy myszki oraz kółka myszki")
         
     if not glfwInit():
