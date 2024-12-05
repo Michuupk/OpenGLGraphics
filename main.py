@@ -517,9 +517,13 @@ def main():
     print(" ")
     print("Poruszanie obiektem przy pomocy WSADQE")
     print("Poruszanie kamerą przy pomocy myszki oraz kółka myszki")
-    print("Przęłączanie światła przy pomocy klawisza Z")
+    print("Przełącznik światła klawisz Z")
     print("Przęłączanie kontorlowanego światła przy pomocy X")
-    print("Przesunięcie światła przy pomocy klawiszy IJKLUO")
+    print("Przesunięcie światła przy pomocy klawiszy ILKI")
+    print("Zmiana odległości śwaitła względem obiektu UO")
+    print("Przełączanie śwaitła czerwonego pod 1")
+    print("Przełączanie śwaitła niebieskiego pod 2")
+    print("Przełączanie obu świateł pod 0")
         
     if not glfwInit():
         sys.exit(-1)
