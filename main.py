@@ -13,10 +13,12 @@ theta_y = 0.0
 theta_z = 0.0
 pix2angle = 1.0
 radius = 0.1
-light0_p = [0.0, 0.0, 5.0] #position
+light0_p = [5.0, 0.0, 0.0] #position
 light0_d = [0.0, 0.0, -1.0] #direction
-light1_p = [0.0, 0.0, -5.0]
+light1_p = [-5.0, 0.0, 0.0]
 light1_d = [0.0, 0.0, 1.0]
+radius_of_lights = [10.0, -10.0]
+angle_of_lights = [0.0, 0.0]
 
 light_source_move = 0
 
@@ -71,7 +73,7 @@ def startup():
     
     #Light0
     light_ambient0 = [0.1, 0.1, 0.1, 1.0] # rgb
-    light_diffuse0 = [0.0, 1.0, 0.0, 1.0]
+    light_diffuse0 = [1.0, 0.0, 0.0, 1.0]
     light_specular0 = [0.1, 0.1, 0.1, 1.0]
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient0)
@@ -279,6 +281,23 @@ def keyboard_key_callback(window, key, scancode, action, mods):
             else:
                 d -= 1
                 print(d)
+        elif key == GLFW_KEY_1:
+            if glIsEnabled(GL_LIGHT0):
+                glDisable(GL_LIGHT0)
+            else:
+                glEnable(GL_LIGHT0)
+        elif key == GLFW_KEY_2:
+            if glIsEnabled(GL_LIGHT1):
+                glDisable(GL_LIGHT1)
+            else:
+                glEnable(GL_LIGHT1)
+        elif key == GLFW_KEY_0:
+            if glIsEnabled(GL_LIGHT1):
+                glDisable(GL_LIGHT1)
+                glDisable(GL_LIGHT0)
+            else:
+                glEnable(GL_LIGHT1)
+                glEnable(GL_LIGHT0)
         elif key == GLFW_KEY_ESCAPE and action == GLFW_PRESS:
             glfwSetWindowShouldClose(window, GLFW_TRUE)
         elif key == GLFW_KEY_X: # Klawisz "X" - przesunięcie światła
@@ -294,50 +313,50 @@ def keyboard_key_callback(window, key, scancode, action, mods):
             elif(light_source_move == 2):
                 print("światło niebieskie")
         elif light_source_move == 0: # Klawisz "X" - przesunięcie światła
-            if key == GLFW_KEY_J:  # J - przesunięcie świateł w lewo
-                light0_p[0] -= 1.0
-                light1_p[0] += 1.0
-            elif key == GLFW_KEY_L:  # L - przesunięcie świateł w prawo
-                light0_p[0] += 1.0
-                light1_p[0] -= 1.0
+            if key == GLFW_KEY_J:  # J - przesunięcie świateł w lewo po okręgu
+                angle_of_lights[0] += 0.1
+                angle_of_lights[1] += 0.1
+            elif key == GLFW_KEY_L:  # L - przesunięcie świateł w prawo po okręgu
+                angle_of_lights[0] -= 0.1
+                angle_of_lights[1] -= 0.1
             elif key == GLFW_KEY_I:  # I - przesunięcie świateł w górę
-                light0_p[1] += 1.0
-                light1_p[1] += 1.0
-            elif key == GLFW_KEY_K:  # K - przesunięcie świateł w dół
                 light0_p[1] -= 1.0
                 light1_p[1] -= 1.0
+            elif key == GLFW_KEY_K:  # K - przesunięcie świateł w dół
+                light0_p[1] += 1.0
+                light1_p[1] += 1.0
             elif key == GLFW_KEY_U:  # U - przesunięcie świateł do przodu
-                light0_p[2] += 1.0
-                light1_p[2] -= 1.0
+                radius_of_lights[0] += 1.0
+                radius_of_lights[1] += 1.0
             elif key == GLFW_KEY_O:  # O - przesunięcie świateł do tyłu
-                light0_p[2] -= 1.0
-                light1_p[2] += 1.0
+                radius_of_lights[0] -= 1.0
+                radius_of_lights[1] -= 1.0
         elif light_source_move == 1: # światło czerwone
             if key == GLFW_KEY_J:  # J - przesunięcie światła czerwonego w lewo
-                light0_p[0] -= 1.0
+                angle_of_lights[0] += 0.1
             elif key == GLFW_KEY_L:  # L - przesunięcie światła czerwonego w prawo
-                light0_p[0] += 1.0
+                angle_of_lights[0] -= 0.1
             elif key == GLFW_KEY_I:  # I - przesunięcie światła czerwonego w górę
-                light0_p[1] += 1.0
+                light0_p[1] -= 1.0
             elif key == GLFW_KEY_K:  # K - przesunięcie światła czerwonego w dół
-                light0_p[1] -= 1.0
-            elif key == GLFW_KEY_U:  # U - przesunięcie światła czerwonego do przodu
                 light0_p[1] += 1.0
+            elif key == GLFW_KEY_U:  # U - przesunięcie światła czerwonego do przodu
+                radius_of_lights[0] += 1.0
             elif key == GLFW_KEY_O:  # O - przesunięcie światła czerwonego do tyłu
-                light0_p[1] -= 1.0
+                radius_of_lights[0] -= 1.0
         elif light_source_move == 2: # światło niebieskie
             if key == GLFW_KEY_J:  # J - przesunięcie światła niebieskiego w lewo
-                light1_p[0] -= 1.0
+                angle_of_lights[1] += 0.1
             elif key == GLFW_KEY_L:  # L - przesunięcie światła niebieskiego w prawo
-                light1_p[0] += 1.0
+                angle_of_lights[1] -= 0.1
             elif key == GLFW_KEY_I:  # I - przesunięcie światła niebieskiego w górę
-                light1_p[1] += 1.0
-            elif key == GLFW_KEY_K:  # K - przesunięcie światła niebieskiego w dół
                 light1_p[1] -= 1.0
-            elif key == GLFW_KEY_U:  # U - przesunięcie światła niebieskiego do przodu
-                light1_p[2] += 1.0
-            elif key == GLFW_KEY_O:  # O - przesunięcie światła niebieskiego do tyłu
-                light1_p[2] -= 1.0
+            elif key == GLFW_KEY_K:  # K - przesunięcie światła niebieskiego w dół
+                light1_p[1] += 1.0
+            elif key == GLFW_KEY_O:  # O - przesunięcie światła niebieskiego do przodus
+                radius_of_lights[1] += 1.0
+            elif key == GLFW_KEY_U:  # U - przesunięcie światła niebieskiego do tyłu
+                radius_of_lights[1] -= 1.0
 
 def mouse_motion_callback(window, x_pos, y_pos):
     global delta_x
@@ -384,6 +403,10 @@ def signum(x):
     else:
         return 0.0
         
+def update_coordinates(radius, angle):
+    x = radius * math.cos(angle)
+    y = radius * math.sin(angle)
+    return x, y
 
 def render(time):
     global theta_x
@@ -427,19 +450,21 @@ def render(time):
     glPushMatrix()
     
     #red light
+    light0_p[0], light0_p[2] = update_coordinates(radius_of_lights[0], angle_of_lights[0])
     light_position0 = [light0_p[0], light0_p[1], light0_p[2], 1.0]
-    light0_d[0] = signum(light0_p[0])
-    light0_d[1] = signum(light0_p[1])
-    light0_d[2] = signum(light0_p[2])
+    light0_d[0] = signum(light_position0[0])
+    light0_d[1] = signum(light_position0[1])
+    light0_d[2] = signum(light_position0[2])
     light_direction0 = [light0_d[0], light0_d[1], light0_d[2]]
     glLightfv(GL_LIGHT0, GL_POSITION, light_position0)
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction0)
 
     #blue light
+    light1_p[0], light1_p[2] = update_coordinates(radius_of_lights[1], angle_of_lights[1])
     light_position1 = [light1_p[0], light1_p[1], light1_p[2], 1.0]
-    light1_d[0] = signum(light1_p[0])
-    light1_d[1] = signum(light1_p[1])
-    light1_d[2] = signum(light1_p[2])
+    light1_d[0] = signum(light_position1[0])
+    light1_d[1] = signum(light_position1[1])
+    light1_d[2] = signum(light_position1[2])
     light_direction1 = [light1_d[0], light1_d[1], light1_d[2]]
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1)
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction1)
