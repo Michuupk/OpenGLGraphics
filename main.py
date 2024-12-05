@@ -12,11 +12,11 @@ theta_x = 0.0
 theta_y = 0.0
 theta_z = 0.0
 pix2angle = 1.0
-radius = 0
-light0_p = [5.0, 0.0, 0.0] #position
-light0_d = [-1.0, 0.0, 0.0] #direction
-light1_p = [-5.0, 0.0, 0.0]
-light1_d = [1.0, 0.0, 0.0]
+radius = 0.1
+light0_p = [0.0, 0.0, 5.0] #position
+light0_d = [0.0, 0.0, -1.0] #direction
+light1_p = [0.0, 0.0, -5.0]
+light1_d = [0.0, 0.0, 1.0]
 
 light_source_move = 0
 
@@ -393,6 +393,10 @@ def render(time):
     global option
     global camera_position
     global upv
+    global light0_p
+    global light0_d
+    global light1_p
+    global light1_d
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     
@@ -421,11 +425,8 @@ def render(time):
 
     glMatrixMode(GL_MODELVIEW)
     glPushMatrix()
-    glLoadIdentity()
     
     #red light
-    global light0_p
-    global light0_d
     light_position0 = [light0_p[0], light0_p[1], light0_p[2], 1.0]
     light0_d[0] = signum(light0_p[0])
     light0_d[1] = signum(light0_p[1])
@@ -435,8 +436,6 @@ def render(time):
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction0)
 
     #blue light
-    global light1_p
-    global light1_d
     light_position1 = [light1_p[0], light1_p[1], light1_p[2], 1.0]
     light1_d[0] = signum(light1_p[0])
     light1_d[1] = signum(light1_p[1])
@@ -444,7 +443,6 @@ def render(time):
     light_direction1 = [light1_d[0], light1_d[1], light1_d[2]]
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1)
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction1)
-    
     glPopMatrix()
 
     glLoadIdentity()
@@ -468,10 +466,10 @@ def update_viewport(window, width, height):
     aspectRatio = width / height
     
     glMatrixMode(GL_PROJECTION)
-    glViewport(0, 0, width, height)
     glLoadIdentity()
-
+    
     gluPerspective(90, 1.0, 0.1, 100.0)
+    glViewport(0, 0, width, height)
 
     if width <= height:
         glOrtho(-10, 10, -10 / aspectRatio, 10 / aspectRatio, 10, -10)
