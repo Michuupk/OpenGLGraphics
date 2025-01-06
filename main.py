@@ -12,13 +12,14 @@ theta_x = 0.0
 theta_y = 0.0
 theta_z = 0.0
 pix2angle = 1.0
-radius = 0
-light0_x = 0.0
-light0_y = 0.0
-light0_z = -5.0
-light1_x = 0.0
-light1_y = 0.0
-light1_z = 5.0
+radius = 0.1
+light0_p = [5.0, 0.0, 0.0] #position
+light0_d = [0.0, 0.0, -1.0] #direction
+light1_p = [-5.0, 0.0, 0.0]
+light1_d = [0.0, 0.0, 1.0]
+radius_of_lights = [10.0, -10.0]
+angle_of_lights = [0.0, 0.0]
+
 light_source_move = 0
 
 left_mouse_button_pressed = 0
@@ -51,13 +52,13 @@ def startup():
 
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
-    #glFrontFace(GL_CW)
-    #glEnable(GL_CULL_FACE)
+    glFrontFace(GL_CW)
+    glEnable(GL_CULL_FACE)
     glCullFace(GL_BACK)
     glShadeModel(GL_SMOOTH)
     
-    material_ambient = [0.5, 0.5, 0.5, 1.0]
-    material_diffuse = [0.0, 1.0, 0.0, 1.0]
+    material_ambient = [0.2, 0.2, 0.2, 1.0]
+    material_diffuse = [1.0, 1.0, 1.0, 1.0]
     material_specular = [0.3, 0.3, 0.3, 1.0]
     material_shininess = 50
     
@@ -68,7 +69,7 @@ def startup():
 
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
-    #glEnable(GL_LIGHT1)
+    glEnable(GL_LIGHT1)
     
     #Light0
     light_ambient0 = [0.1, 0.1, 0.1, 1.0] # rgb
@@ -79,7 +80,7 @@ def startup():
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse0)
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular0)
 
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 90.0) 
+    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 30.0) 
     glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 1.0)
      
     #Light1
@@ -90,7 +91,7 @@ def startup():
     glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse1)
     glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular1)
 
-    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 90.0) 
+    glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 30.0) 
     glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 1.0)
     
 def shutdown():
@@ -99,15 +100,15 @@ def shutdown():
 def axes():
     glBegin(GL_LINES)
 
-    glColor3f(1.0, 0.0, 0.0)
+    glColor3f(1.0, 0.0, 0.0) #red x-axis
     glVertex3f(-50.0, 0.0, 0.0)
     glVertex3f(50.0, 0.0, 0.0)
 
-    glColor3f(0.0, 1.0, 0.0)
+    glColor3f(0.0, 1.0, 0.0) #green y-axis
     glVertex3f(0.0, -50.0, 0.0)
     glVertex3f(0.0, 50.0, 0.0)
 
-    glColor3f(0.0, 0.0, 1.0)
+    glColor3f(0.0, 0.0, 1.0) #blue z-axis
     glVertex3f(0.0, 0.0, -50.0)
     glVertex3f(0.0, 0.0, 50.0)
 
@@ -150,27 +151,6 @@ def eggLine():
         u = 0
     glEnd()
 
-def Cube():
-    
-    glColor3f(1.0, 1.0, 1.0)
-    glBegin(GL_QUADS)
-    glVertex3f(-5 , -5, -5)
-    glVertex3f(5 , -5, -5)
-    glVertex3f(5 , 5, -5)
-    glVertex3f(-5 , 5, -5)
-    glVertex3f(-5 , -5, 5)
-    glVertex3f(5 , -5, 5)
-    glVertex3f(5 , 5, 5)
-    glVertex3f(-5 , 5, 5)
-    glVertex3f(-5 , -5, -5)
-    glVertex3f(-5 , -5, 5)
-    glVertex3f(-5 , 5, 5)
-    glVertex3f(-5 , 5, -5)
-    
-    glEnd()
-    
-    
-    
 def eggTriangles():
     global d
     tab = np.zeros((d, d, 3))
@@ -204,13 +184,13 @@ def eggTriangles():
             normal1 = calculate_normal(v1, v2, v3)
             normal2 = calculate_normal(v1, v3, v4)
 
-            glColor3f(1.0, 0.0, 0.0) # red
+            glColor3f(1.0, 1.0, 1.0) # white
             glNormal3f(*normal1)
             glVertex3f(*v1)
             glVertex3f(*v2)
             glVertex3f(*v3)
 
-            glColor3f(0.0, 0.0, 1.0) # blue
+            glColor3f(1.0, 1.0, 0.0) # yellow 
             glNormal3f(*normal2)
             glVertex3f(*v1)
             glVertex3f(*v3)
@@ -266,7 +246,7 @@ def spin():
     glRotatef(angle_z, 0.0, 0.0, 1.0)  # Obrót w osi Z
 
 def keyboard_key_callback(window, key, scancode, action, mods):
-    global angle_x, angle_y, angle_z, option, d, light0_x, light1_x, light0_y, light1_y, light0_z, light1_z, light_source_move
+    global angle_x, angle_y, angle_z, option, d, light0_p, light1_p, light_source_move
     if action == GLFW_PRESS or action == GLFW_REPEAT:
         if key == GLFW_KEY_A:  # Strzałka w lewo - obrót w osi Y
             angle_y -= 10.0
@@ -301,65 +281,82 @@ def keyboard_key_callback(window, key, scancode, action, mods):
             else:
                 d -= 1
                 print(d)
+        elif key == GLFW_KEY_1:
+            if glIsEnabled(GL_LIGHT0):
+                glDisable(GL_LIGHT0)
+            else:
+                glEnable(GL_LIGHT0)
+        elif key == GLFW_KEY_2:
+            if glIsEnabled(GL_LIGHT1):
+                glDisable(GL_LIGHT1)
+            else:
+                glEnable(GL_LIGHT1)
+        elif key == GLFW_KEY_0:
+            if glIsEnabled(GL_LIGHT1):
+                glDisable(GL_LIGHT1)
+                glDisable(GL_LIGHT0)
+            else:
+                glEnable(GL_LIGHT1)
+                glEnable(GL_LIGHT0)
         elif key == GLFW_KEY_ESCAPE and action == GLFW_PRESS:
             glfwSetWindowShouldClose(window, GLFW_TRUE)
         elif key == GLFW_KEY_X: # Klawisz "X" - przesunięcie światła
             print("Zmiana światła na : ")
+            if light_source_move < 2:
+                light_source_move += 1
+            else:
+                light_source_move = 0
             if(light_source_move == 0):
                 print("oba światła")
             elif(light_source_move == 1):
                 print("światło czerwone")
             elif(light_source_move == 2):
                 print("światło niebieskie")
-            if light_source_move < 2:
-                light_source_move += 1
-            else:
-                light_source_move = 0
         elif light_source_move == 0: # Klawisz "X" - przesunięcie światła
-            if key == GLFW_KEY_J:  # J - przesunięcie świateł w lewo
-                light0_x -= 1.0
-                light1_x += 1.0
-            elif key == GLFW_KEY_L:  # L - przesunięcie świateł w prawo
-                light0_x += 1.0
-                light1_x -= 1.0
+            if key == GLFW_KEY_J:  # J - przesunięcie świateł w lewo po okręgu
+                angle_of_lights[0] += 0.1
+                angle_of_lights[1] += 0.1
+            elif key == GLFW_KEY_L:  # L - przesunięcie świateł w prawo po okręgu
+                angle_of_lights[0] -= 0.1
+                angle_of_lights[1] -= 0.1
             elif key == GLFW_KEY_I:  # I - przesunięcie świateł w górę
-                light0_y += 1.0
-                light1_y -= 1.0
+                light0_p[1] -= 1.0
+                light1_p[1] -= 1.0
             elif key == GLFW_KEY_K:  # K - przesunięcie świateł w dół
-                light0_y -= 1.0
-                light1_y += 1.0
+                light0_p[1] += 1.0
+                light1_p[1] += 1.0
             elif key == GLFW_KEY_U:  # U - przesunięcie świateł do przodu
-                light0_z += 1.0
-                light1_z -= 1.0
+                radius_of_lights[0] += 1.0
+                radius_of_lights[1] += 1.0
             elif key == GLFW_KEY_O:  # O - przesunięcie świateł do tyłu
-                light0_z -= 1.0
-                light1_z += 1.0
+                radius_of_lights[0] -= 1.0
+                radius_of_lights[1] -= 1.0
         elif light_source_move == 1: # światło czerwone
             if key == GLFW_KEY_J:  # J - przesunięcie światła czerwonego w lewo
-                light0_x -= 1.0
+                angle_of_lights[0] += 0.1
             elif key == GLFW_KEY_L:  # L - przesunięcie światła czerwonego w prawo
-                light0_x += 1.0
+                angle_of_lights[0] -= 0.1
             elif key == GLFW_KEY_I:  # I - przesunięcie światła czerwonego w górę
-                light0_y += 1.0
+                light0_p[1] -= 1.0
             elif key == GLFW_KEY_K:  # K - przesunięcie światła czerwonego w dół
-                light0_y -= 1.0
+                light0_p[1] += 1.0
             elif key == GLFW_KEY_U:  # U - przesunięcie światła czerwonego do przodu
-                light0_z += 1.0
+                radius_of_lights[0] += 1.0
             elif key == GLFW_KEY_O:  # O - przesunięcie światła czerwonego do tyłu
-                light0_z -= 1.0
+                radius_of_lights[0] -= 1.0
         elif light_source_move == 2: # światło niebieskie
             if key == GLFW_KEY_J:  # J - przesunięcie światła niebieskiego w lewo
-                light1_x -= 1.0
+                angle_of_lights[1] += 0.1
             elif key == GLFW_KEY_L:  # L - przesunięcie światła niebieskiego w prawo
-                light1_x += 1.0
+                angle_of_lights[1] -= 0.1
             elif key == GLFW_KEY_I:  # I - przesunięcie światła niebieskiego w górę
-                light1_y += 1.0
+                light1_p[1] -= 1.0
             elif key == GLFW_KEY_K:  # K - przesunięcie światła niebieskiego w dół
-                light1_y -= 1.0
-            elif key == GLFW_KEY_U:  # U - przesunięcie światła niebieskiego do przodu
-                light1_z += 1.0
-            elif key == GLFW_KEY_O:  # O - przesunięcie światła niebieskiego do tyłu
-                light1_z -= 1.0
+                light1_p[1] += 1.0
+            elif key == GLFW_KEY_O:  # O - przesunięcie światła niebieskiego do przodus
+                radius_of_lights[1] += 1.0
+            elif key == GLFW_KEY_U:  # U - przesunięcie światła niebieskiego do tyłu
+                radius_of_lights[1] -= 1.0
 
 def mouse_motion_callback(window, x_pos, y_pos):
     global delta_x
@@ -397,7 +394,19 @@ def scroll_callback(window, xoffset, yoffset):
         radius = -45
     if radius > 45:
         radius = 45
+
+def signum(x):
+    if x < 0.0:
+        return 1.0
+    elif x > 0.0:
+        return -1.0
+    else:
+        return 0.0
         
+def update_coordinates(radius, angle):
+    x = radius * math.cos(angle)
+    y = radius * math.sin(angle)
+    return x, y
 
 def render(time):
     global theta_x
@@ -407,9 +416,12 @@ def render(time):
     global option
     global camera_position
     global upv
+    global light0_p
+    global light0_d
+    global light1_p
+    global light1_d
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glLoadIdentity()
     
     if left_mouse_button_pressed:
         camera_position[0] = math.cos(delta_y) * math.cos(delta_x)
@@ -434,36 +446,35 @@ def render(time):
         camera_position[1] = camera_position[1]
         camera_position[2] = camera_position[2]
 
-    gluLookAt(camera_position[0] * radius,camera_position[1] * radius,camera_position[2] * radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
-    
+    glMatrixMode(GL_MODELVIEW)
     glPushMatrix()
-    glLoadIdentity()
     
     #red light
-    global light0_x
-    global light0_y
-    global light0_z
-    light_position0 = [light0_x, light0_y, light0_z, 1.0]
-    light_direction0 = [-1.0, 0.0, 0.0]
+    light0_p[0], light0_p[2] = update_coordinates(radius_of_lights[0], angle_of_lights[0])
+    light_position0 = [light0_p[0], light0_p[1], light0_p[2], 1.0]
+    light0_d[0] = signum(light_position0[0])
+    light0_d[1] = signum(light_position0[1])
+    light0_d[2] = signum(light_position0[2])
+    light_direction0 = [light0_d[0], light0_d[1], light0_d[2]]
     glLightfv(GL_LIGHT0, GL_POSITION, light_position0)
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction0)
 
     #blue light
-    global light1_x
-    global light1_y
-    global light1_z
-    light_position1 = [light1_x, light1_y, light1_z, 1.0]
-    light_direction1 = [1.0, 0.0, 0.0]
+    light1_p[0], light1_p[2] = update_coordinates(radius_of_lights[1], angle_of_lights[1])
+    light_position1 = [light1_p[0], light1_p[1], light1_p[2], 1.0]
+    light1_d[0] = signum(light_position1[0])
+    light1_d[1] = signum(light_position1[1])
+    light1_d[2] = signum(light_position1[2])
+    light_direction1 = [light1_d[0], light1_d[1], light1_d[2]]
     glLightfv(GL_LIGHT1, GL_POSITION, light_position1)
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction1)
-    
-    
     glPopMatrix()
 
+    glLoadIdentity()
+    gluLookAt(camera_position[0] * radius,camera_position[1] * radius,camera_position[2] * radius, 0.0, 0.0, 0.0, upv[0], upv[1], upv[2])
+    
     axes()
-    Cube()
-    
-    
+     
     spin()
     getfunction(option)
 
@@ -480,10 +491,10 @@ def update_viewport(window, width, height):
     aspectRatio = width / height
     
     glMatrixMode(GL_PROJECTION)
-    glViewport(0, 0, width, height)
     glLoadIdentity()
-
+    
     gluPerspective(90, 1.0, 0.1, 100.0)
+    glViewport(0, 0, width, height)
 
     if width <= height:
         glOrtho(-10, 10, -10 / aspectRatio, 10 / aspectRatio, 10, -10)
@@ -506,9 +517,13 @@ def main():
     print(" ")
     print("Poruszanie obiektem przy pomocy WSADQE")
     print("Poruszanie kamerą przy pomocy myszki oraz kółka myszki")
-    print("Przęłączanie światła przy pomocy klawisza Z")
+    print("Przełącznik światła klawisz Z")
     print("Przęłączanie kontorlowanego światła przy pomocy X")
-    print("Przesunięcie światła przy pomocy klawiszy IJKLUO")
+    print("Przesunięcie światła przy pomocy klawiszy ILKI")
+    print("Zmiana odległości śwaitła względem obiektu UO")
+    print("Przełączanie śwaitła czerwonego pod 1")
+    print("Przełączanie śwaitła niebieskiego pod 2")
+    print("Przełączanie obu świateł pod 0")
         
     if not glfwInit():
         sys.exit(-1)
