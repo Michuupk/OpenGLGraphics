@@ -1,6 +1,7 @@
 import math
 import sys
 import numpy as np
+from PIL import Image
 
 from glfw.GLFW import *
 
@@ -52,9 +53,9 @@ def startup():
 
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
-    glFrontFace(GL_CW)
-    glEnable(GL_CULL_FACE)
-    glCullFace(GL_BACK)
+    # glFrontFace(GL_CW)
+    # glEnable(GL_CULL_FACE)
+    # glCullFace(GL_BACK)
     glShadeModel(GL_SMOOTH)
     
     material_ambient = [0.2, 0.2, 0.2, 1.0]
@@ -67,9 +68,9 @@ def startup():
     glMaterialfv(GL_FRONT, GL_SPECULAR, material_specular)
     glMaterialfv(GL_FRONT, GL_SHININESS, material_shininess)
 
-    glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
-    glEnable(GL_LIGHT1)
+    # glEnable(GL_LIGHTING)
+    # glEnable(GL_LIGHT0)
+    # glEnable(GL_LIGHT1)
     
     #Light0
     light_ambient0 = [0.1, 0.1, 0.1, 1.0] # rgb
@@ -96,6 +97,21 @@ def startup():
     
 def shutdown():
     pass
+
+def load_texture(file):
+    img = Image.open(file)
+    img = img.transpose(Image.FLIP_TOP_BOTTOM)
+    img_data = np.array(img.convert("RGB"), dtype=np.uint8)
+    
+    global texture
+    texture = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, texture)
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width, img.height, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, img_data)
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
 def axes():
     glBegin(GL_LINES)
@@ -172,7 +188,7 @@ def eggTriangles():
         if norm == 0:
             return normal
         return normal / norm
-
+    
     glBegin(GL_TRIANGLES)
     for j in range(1, d):
         for i in range(1, d):
@@ -197,45 +213,39 @@ def eggTriangles():
             glVertex3f(*v4)
     glEnd()
 
-def readTeapot():
+def load_shape_from_obj(file_path):
+    try:
+        vertices = []
+        faces = []
+        with open(file_path) as f:
+            for line in f:
+                if line.startswith('v '):
+                    vertex = list(map(float, line[2:].strip().split()))
+                    vertices.append(vertex)
+                elif line.startswith('f '):
+                    face = [int(i.split('/')[0]) - 1 for i in line[2:].strip().split()]
+                    faces.append(face)
 
-    file1 = open("teapot.obj","r")
-    xs = []
-    ys = []
-    zs = []
-    
-    while file1.read(1) == "v":
-        text = file1.readline().split()
-        x = text[0]
-        y = text[1] 
-        z = text[2]
-        xs.append(x)
-        ys.append(y)
-        zs.append(z)
-    file1.close()
-    
-    return xs, ys, zs
+        shape_data = {
+            "vertices": np.array(vertices, dtype=np.float32),
+            "faces": np.array(faces, dtype=np.uint32)
+        }
+        return shape_data
+
+    except FileNotFoundError:
+        print(f"{file_path} not found.")
+    except:
+        print("An error occurred while loading the shape.")
 
 def utahTeapot():
-    
-    xs = list()
-    ys = list()
-    zs = list()
-    
-    xs, ys, zs = readTeapot()
+    global obj_model
+    if obj_model:
+        glBegin(GL_TRIANGLES)
+        for face in obj_model['faces']:
+            for vertex_id in face:
+                glVertex3fv(obj_model['vertices'][vertex_id])
+        glEnd()
 
-    glBegin(GL_POINTS)
-    
-    glColor3f(0.0, 1.0, 0.0)
-    
-    i = 0
-    for i in range(len(xs)):
-        x = float(xs[i])
-        y = float(ys[i])
-        z = float(zs[i])
-        glVertex3f(x, y, z)
-        
-    glEnd();    
 
 angle_x = 0.0
 angle_y = 0.0
@@ -507,6 +517,12 @@ def update_viewport(window, width, height):
 def main():
     global option
     global d
+    global obj_model
+    obj_model = load_shape_from_obj("teapot.obj")
+
+    if obj_model is None:
+        print("Nie udało się załadować modelu.")
+        return
     
     if(d == 0):
         d = int(input("Podaj N: "))
@@ -544,6 +560,8 @@ def main():
     
 
     startup()
+    load_texture("sample.tga")
+
     while not glfwWindowShouldClose(window):
         render(glfwGetTime())
         glfwSwapBuffers(window)
