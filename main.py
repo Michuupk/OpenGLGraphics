@@ -2,6 +2,7 @@ import math
 import sys
 import numpy as np
 from PIL import Image
+from pathlib import Path
 
 from glfw.GLFW import *
 
@@ -35,6 +36,10 @@ upv = [0.0, 1.0, 0.0]
 
 d = 20
 option = 3
+whatimage = 1
+files = []
+folder_path = Path('tekstury')
+files = [f for f in folder_path.iterdir() if f.is_file()]
 
 def getfunction(option):
     # call of drawing function    
@@ -48,14 +53,11 @@ def getfunction(option):
         return utahTeapot()
     
 def startup():
-    glClearColor(0.0, 0.0, 0.1, 1.0)
+    glClearColor(0.0, 0.0, 0.0, 1.0)
     update_viewport(None, 800, 800)
 
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
-    # glFrontFace(GL_CW)
-    # glEnable(GL_CULL_FACE)
-    # glCullFace(GL_BACK)
     glShadeModel(GL_SMOOTH)
     
     material_ambient = [0.2, 0.2, 0.2, 1.0]
@@ -71,6 +73,12 @@ def startup():
     # glEnable(GL_LIGHTING)
     # glEnable(GL_LIGHT0)
     # glEnable(GL_LIGHT1)
+
+    glEnable(GL_TEXTURE_2D)
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
     
     #Light0
     light_ambient0 = [0.1, 0.1, 0.1, 1.0] # rgb
@@ -97,30 +105,6 @@ def startup():
     
 def shutdown():
     pass
-
-def load_texture(file_path):
-    try:
-        # Załaduj plik TGA
-        img = Image.open(file_path)
-        img = img.transpose(Image.FLIP_TOP_BOTTOM)  # Naprawa orientacji w OpenG
-
-        # Tworzenie tekstury
-        texture_id = glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D, texture_id)
-
-        # Ustawienia tekstury
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-
-        # Załaduj teksturę
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.width, img.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.tobytes("raw", "RGBA", 0, -1))
-
-        return texture_id
-    except Exception as e:
-        print(f"Error loading texture: {e}")
-        return None
 
 def axes():
     glBegin(GL_LINES)
@@ -176,7 +160,7 @@ def eggLine():
         u = 0
     glEnd()
 
-def eggTriangles(texture_id=None):
+def eggTriangles():
     global d
     tab = np.zeros((d, d, 3))
     texture = np.zeros((d, d, 2))
@@ -193,7 +177,7 @@ def eggTriangles(texture_id=None):
             y = (160 * u**4 - 320 * u**3 + 160 * u**2 - 5)
             z = (-90 * u**5 + 225 * u**4 - 270 * u**3 + 180 * u**2 - 45 * u) * math.sin(3.1415 * v)
             tab[i, j] = [x, y, z]
-            texture[i, j] = [ut[i], vt[j]]
+            texture[j, i] = [ut[i], vt[j]]
             
     def calculate_normal(v1, v2, v3):
         u = np.subtract(v2, v1)
@@ -203,10 +187,12 @@ def eggTriangles(texture_id=None):
         if norm == 0:
             return normal
         return normal / norm
-    
-    if texture_id:
-        glEnable(GL_TEXTURE_2D)
-        glBindTexture(GL_TEXTURE_2D, texture_id)
+    glFrontFace(GL_CW)
+    texture_image = Image.open(files[whatimage])
+    glTexImage2D(
+        GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
+        GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)
+    )
     glBegin(GL_TRIANGLES)
     for j in range(1, d):
         for i in range(1, d):
@@ -229,7 +215,7 @@ def eggTriangles(texture_id=None):
             glVertex3f(*v3)
 
             # Drugi trójkąt
-            glColor3f(1.0, 1.0, 0.0)  # yellow
+            glColor3f(1.0, 1.0, 1.0)  # white
             glNormal3f(*normal2)
             glTexCoord2f(*texture[i - 1, j - 1])  # Współrzędne tekstury dla v1
             glVertex3f(*v1)
@@ -238,30 +224,30 @@ def eggTriangles(texture_id=None):
             glTexCoord2f(*texture[i - 1, j])  # Współrzędne tekstury dla v4
             glVertex3f(*v4)
     glEnd()
-
-    if texture_id:
-        glDisable(GL_TEXTURE_2D)
-
-
-def utahTeapot(texture_id=None):
+    
+def utahTeapot():
     global obj_model
+    glFrontFace(GL_CCW)
     if obj_model:
-        if texture_id:
-            glEnable(GL_TEXTURE_2D)
-            glBindTexture(GL_TEXTURE_2D, texture_id)
+        texture_image = Image.open(files[whatimage])
+        glTexImage2D(
+        GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
+        GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)
+        )
         glBegin(GL_TRIANGLES)
         for face in obj_model['faces']:
             for vertex_id in face:
-                glTexCoord2f(0.0, 0.0)                          #not defined yet ( gimp )
+                glTexCoord3fv(obj_model['textures'][vertex_id])
+                glColor3f(1.0, 1.0, 1.0)
                 glVertex3fv(obj_model['vertices'][vertex_id])
         glEnd()
-        if texture_id:
-            glDisable(GL_TEXTURE_2D)
 
 def load_shape_from_obj(file_path):
     try:
         vertices = []
         faces = []
+        textures = []
+        normals = []
         with open(file_path) as f:
             for line in f:
                 if line.startswith('v '):
@@ -270,11 +256,19 @@ def load_shape_from_obj(file_path):
                 elif line.startswith('f '):
                     face = [int(i.split('/')[0]) - 1 for i in line[2:].strip().split()]
                     faces.append(face)
+                elif line.startswith('vt '):
+                    texture = list(map(float, line[3:].strip().split()))
+                    textures.append(texture)
+                elif line.startswith('vn '):
+                    normal = list(map(float, line[3:].strip().split()))
+                    normals.append(normal)
 
 
         shape_data = {
             "vertices": np.array(vertices, dtype=np.float32),
-            "faces": np.array(faces, dtype=np.uint32)
+            "faces": np.array(faces, dtype=np.uint32),
+            "textures": np.array(textures, dtype=np.float32),
+            "normals": np.array(normals, dtype=np.float32)
         }
         return shape_data
 
@@ -306,6 +300,12 @@ def keyboard_key_callback(window, key, scancode, action, mods):
             angle_z += 10.0
         elif key == GLFW_KEY_E:  # Klawisz "E" - obrót w osi Z
             angle_z -= 10.0
+        elif key == GLFW_KEY_BACKSLASH: #Klawisz "\" - zmiana textury
+            global whatimage, files
+            if whatimage < len(files) - 1:
+                whatimage += 1
+            else:
+                whatimage = 0
         elif key == GLFW_KEY_Z: # Klawisz "Z" - włączenie/wyłączenie światła
             print("Zmiana Światła")
             if glIsEnabled(GL_LIGHTING):
@@ -559,8 +559,6 @@ def main():
     if obj_model is None:
         print("Nie udało się załadować modelu.")
         return
-    
-    texture_id = load_texture("sample.tga")
     
     if(d == 0):
         d = int(input("Podaj N: "))
