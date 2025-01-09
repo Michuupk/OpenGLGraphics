@@ -70,9 +70,9 @@ def startup():
     glMaterialfv(GL_FRONT, GL_SPECULAR, material_specular)
     glMaterialfv(GL_FRONT, GL_SHININESS, material_shininess)
 
-    # glEnable(GL_LIGHTING)
-    # glEnable(GL_LIGHT0)
-    # glEnable(GL_LIGHT1)
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    glEnable(GL_LIGHT1)
 
     glEnable(GL_TEXTURE_2D)
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
@@ -193,6 +193,7 @@ def eggTriangles():
         GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
         GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)
     )
+    glEnable(GL_TEXTURE_2D)
     glBegin(GL_TRIANGLES)
     for j in range(1, d):
         for i in range(1, d):
@@ -224,6 +225,7 @@ def eggTriangles():
             glTexCoord2f(*texture[i - 1, j])  # Współrzędne tekstury dla v4
             glVertex3f(*v4)
     glEnd()
+    glDisable(GL_TEXTURE_2D)
     
 def utahTeapot():
     global obj_model
@@ -234,13 +236,19 @@ def utahTeapot():
         GL_TEXTURE_2D, 0, 3, texture_image.size[0], texture_image.size[1], 0,
         GL_RGB, GL_UNSIGNED_BYTE, texture_image.tobytes("raw", "RGB", 0, -1)
         )
+        glEnable(GL_TEXTURE_2D)
         glBegin(GL_TRIANGLES)
         for face in obj_model['faces']:
-            for vertex_id in face:
-                glTexCoord3fv(obj_model['textures'][vertex_id])
+            for vertex_data in face:
+                vertex_id, texture_id, normal_id = (int(idx)- 1 if idx else -1 for idx in vertex_data.split('/'))
+                if texture_id >= 0:
+                    glTexCoord2fv(obj_model['textures'][texture_id])
+                if normal_id >= 0:
+                    glNormal3fv(obj_model['normals'][normal_id])
                 glColor3f(1.0, 1.0, 1.0)
                 glVertex3fv(obj_model['vertices'][vertex_id])
         glEnd()
+        glDisable(GL_TEXTURE_2D)
 
 def load_shape_from_obj(file_path):
     try:
@@ -253,22 +261,22 @@ def load_shape_from_obj(file_path):
                 if line.startswith('v '):
                     vertex = list(map(float, line[2:].strip().split()))
                     vertices.append(vertex)
-                elif line.startswith('f '):
-                    face = [int(i.split('/')[0]) - 1 for i in line[2:].strip().split()]
-                    faces.append(face)
                 elif line.startswith('vt '):
                     texture = list(map(float, line[3:].strip().split()))
-                    textures.append(texture)
+                    textures.append(texture[:2])
                 elif line.startswith('vn '):
                     normal = list(map(float, line[3:].strip().split()))
                     normals.append(normal)
+                elif line.startswith('f '):
+                    face = [entry for entry in line[2:].strip().split()]
+                    faces.append(face)
 
 
         shape_data = {
             "vertices": np.array(vertices, dtype=np.float32),
-            "faces": np.array(faces, dtype=np.uint32),
             "textures": np.array(textures, dtype=np.float32),
-            "normals": np.array(normals, dtype=np.float32)
+            "normals": np.array(normals, dtype=np.float32),
+            "faces": faces
         }
         return shape_data
 
