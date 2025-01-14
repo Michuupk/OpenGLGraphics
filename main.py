@@ -34,7 +34,7 @@ delta_y = 0
 camera_position = [1.0, 0.0, 0.0]
 upv = [0.0, 1.0, 0.0]
 
-d = 20
+d = 30
 option = 3
 whatimage = 1
 files = []
@@ -58,6 +58,8 @@ def startup():
 
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
+    glEnable(GL_CULL_FACE)
+    glFrontFace(GL_CCW)
     glShadeModel(GL_SMOOTH)
     
     material_ambient = [0.2, 0.2, 0.2, 1.0]
@@ -70,12 +72,14 @@ def startup():
     glMaterialfv(GL_FRONT, GL_SPECULAR, material_specular)
     glMaterialfv(GL_FRONT, GL_SHININESS, material_shininess)
 
-    glEnable(GL_LIGHTING)
+    #glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
     glEnable(GL_LIGHT1)
 
     glEnable(GL_TEXTURE_2D)
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); # Adresowanie w osi S
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); # Adresowanie w osi T
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
@@ -229,6 +233,7 @@ def eggTriangles():
     
 def utahTeapot():
     global obj_model
+    glDisable(GL_CULL_FACE)
     glFrontFace(GL_CCW)
     if obj_model:
         texture_image = Image.open(files[whatimage])
