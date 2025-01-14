@@ -14,7 +14,7 @@ theta_x = 0.0
 theta_y = 0.0
 theta_z = 0.0
 pix2angle = 1.0
-radius = 0.1
+radius = 10.0
 light0_p = [5.0, 0.0, 0.0] #position
 light0_d = [0.0, 0.0, -1.0] #direction
 light1_p = [-5.0, 0.0, 0.0]
@@ -590,6 +590,8 @@ def main():
     print("Przełączanie śwaitła czerwonego pod 1")
     print("Przełączanie śwaitła niebieskiego pod 2")
     print("Przełączanie obu świateł pod 0")
+    print(" ")
+    print("Zmiana tekstury przy pomocy klawisza \"\\\"")
         
     if not glfwInit():
         sys.exit(-1)
